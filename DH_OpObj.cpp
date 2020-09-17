@@ -5,18 +5,18 @@
 const double ONE_OVER_SQRT_2PI = 0.39894228040143267793994605993438;
 DHO::DHO(): Loc_optimise()
 {
-    _init(); 
+    _init();
 }
 void DHO::_init()
 {
     
 }
 
-DHO::DHO( mat &Xin, 
-          mat Xc, 
-          int numObj, 
-          int Dimension, 
-          int FuncT, 
+DHO::DHO( mat &Xin,
+          mat Xc,
+          int numObj,
+          int Dimension,
+          int FuncT,
           double Dist_DHs,
           double minAz,
           double maxAz,
@@ -25,10 +25,10 @@ DHO::DHO( mat &Xin,
           double MaxDip,
           double dist_dip,
           double thrsh_ei,
-          string Mode, 
-          int *data_size, 
-          int disp_level):Xtr(Xin), 
-          Xcollars(Xc)
+          string Mode,
+          int *data_size,
+          int disp_level):Xtr(Xin),
+          Xcollars(Xc), thrsh_ei(thrsh_ei)
           {
               setThrsh_ei(thrsh_ei);
               setNumData(data_size[0]);
@@ -41,7 +41,7 @@ DHO::DHO( mat &Xin,
               
               setM(Mode);
               init();
-              StatisticsCalc(); 
+              StatisticsCalc();
               //    prepareData();???????????????????????????????????
               mat d = max(Xtr, 0);
               Rd = sqrt( pow(abs(max(Xtr, 0)), 2) + pow(abs(min(Xtr, 0)), 2) );
@@ -49,7 +49,14 @@ DHO::DHO( mat &Xin,
               maxRd = Rdpar.max();
               Xcollars_sub = Xc.cols(0, 1);
               
+              int indore = 3;
+              int indstd = 4;
+              MinYh = Xtr.col(indore).min();
+              difMaxMinYh = Xtr.col(indore).max()- MinYh;
               
+              MinYs = Xtr.col(indstd).min();
+              difMaxMinYs = Xtr.col(indstd).max()- MinYs;
+
               
               
               
@@ -57,13 +64,12 @@ DHO::DHO( mat &Xin,
               int Nr = ((MaxData[0]-MinData[0])/Dist_DHs);
               int Nc = ((MaxData[1]-MinData[1])/Dist_DHs);
               int Naz = (maxAz - minAz)/dist_Az;
-              int Ndp = (MaxDip - MinDip)/dist_dip;
-              
+              int Ndp = (MaxDip - MinDip)/dist_dip + 1;
               int NCandidates = Nr*Nc*Naz*Ndp;
               
               int ns = 0;
               
-              CandidateDHs.resize(NCandidates, 7);
+              CandidateDHs.resize(NCandidates, 10);
               
               cout << "N Candidate DHs: "<< NCandidates << "\n";
               
@@ -82,7 +88,7 @@ DHO::DHO( mat &Xin,
                               double ind_low = distancia.index_min();
                               CandidateDHs(ns,2) = Xcollars(ind_low, 2);
                               CandidateDHs(ns, 3) = minAz + dist_Az*k;
-                              CandidateDHs(ns, 4) = MinDip + dist_dip*l;
+                              CandidateDHs(ns, 4) = MinDip + dist_dip*(double)l;
                               cout << CandidateDHs(ns,0) << "\t" << CandidateDHs(ns,1) << "\t" << Xcollars(ind_low, 2) << "\t" << CandidateDHs(ns,3) << "\t" << CandidateDHs(ns,4) << "\t Sample Number: "<< ns<< "\n";
                               ns += 1;
                           }
@@ -90,7 +96,7 @@ DHO::DHO( mat &Xin,
                   }
               }
               
-              cout << "Finished\n";   
+              cout << "Finished\n";
           }
           
           
@@ -173,15 +179,15 @@ DHO::DHO( mat &Xin,
           }
           DHO *ReadMFromFile(const string MFileName)
           {
-              ifstream in(MFileName.c_str());  
-              if(!in) 
+              ifstream in(MFileName.c_str());
+              if(!in)
               {cout << "Reading Model Aborted.\n" ;
                   exit(0);}
                   DHO* pmodel;
                   try
                   {
                       pmodel = new DHO();
-                      pmodel->fromStream(in, MFileName);	
+                      pmodel->fromStream(in, MFileName);
                   }
                   catch (exception& er)
                   {
@@ -199,7 +205,7 @@ DHO::DHO( mat &Xin,
                   FName = FileName + "_info.txt";
               const string comment="";
               ofstream out(FName.c_str());
-              if(!out) 
+              if(!out)
               {
                   cout << "Writing Model Aborted.\n" ;
                   exit(1);
@@ -223,7 +229,7 @@ DHO::DHO( mat &Xin,
               int Dimension = getOptNumParams();
               
               double Length_drill = 0.0;
-              mat Func_EI_L(1,2);
+              mat Func_EI_L(1,5);
               switch ( getFuncType() )
               {
                   case DH:
@@ -243,11 +249,11 @@ DHO::DHO( mat &Xin,
                       infeasible = false;
                       double thrsh = 5;
                       double azimuth = OptPars[3];
-                      double diip=M_PI / 2- OptPars[3]; //pi/2-dip;
+                      double diip=M_PI / 2- OptPars[4]; //pi/2-dip;
                       mat dist = pow(OptPars.submat(0,0,0,1) - Xcollars_sub.each_row(), 2);
                       mat distc = sqrt(sum(dist, 0));
                       int indc = distc.index_min();
-
+                      
                       double     az = azimuth;
                       double dip = diip;
                       vec rad1;
@@ -279,7 +285,7 @@ DHO::DHO( mat &Xin,
                       indn %= newz >= Xtr.col(indz).min();
                       
                       // return indices of non-zero elements
-                      uvec inds = find(indn, 0); 
+                      uvec inds = find(indn, 0);
                       
                       vec newx1 = newx(inds);
                       vec newy1 = newy(inds);
@@ -292,7 +298,7 @@ DHO::DHO( mat &Xin,
                           nexy = join_horiz(nexy, newz1);
                           
                           //maximum length of each drill hole
-                          double maxl = sqrt ( accu( pow ( nexy.submat(0, 0, 0, indz) 
+                          double maxl = sqrt ( accu( pow ( nexy.submat(0, 0, 0, indz)
                           - nexy.submat(nexy.n_rows-1, 0, nexy.n_rows-1, indz), 2 ) ) );
                           
                           
@@ -301,7 +307,7 @@ DHO::DHO( mat &Xin,
                            *    {
                            *      double indmax = nexy.col(indz).index_max();
                            *      nexy.shed_row(indmax);
-                           *      maxl = sqrt ( accu( pow ( nexy.submat(0, 0, 0, indz) 
+                           *      maxl = sqrt ( accu( pow ( nexy.submat(0, 0, 0, indz)
                            *    - nexy.submat(nexy.n_rows-1, 0, nexy.n_rows-1, indz), 2 ) ) );
                       }*/
                           //     uvec maxl_remove = find(maxl < maxDepth);
@@ -314,7 +320,7 @@ DHO::DHO( mat &Xin,
                           int m = 0;
                           for (int i = 0; i < nexy.n_rows; i++)
                           {
-                              mat distancia = sqrt( sum( pow(nexy.row(i) - Xyz.each_row(), 2), 1) ); 
+                              mat distancia = sqrt( sum( pow(nexy.row(i) - Xyz.each_row(), 2), 1) );
                               //distance below a threshold
                               double ind_low = distancia.index_min();
                               mat temp = Xtr.row(ind_low);
@@ -342,30 +348,43 @@ DHO::DHO( mat &Xin,
                           uvec unq = find_unique(nexy1.col(indexes));
                           nexy1 = nexy1.rows(unq);
                           // fourth column is estimated value
-    
+                          
                           
                           int NOB = nexy1.n_rows;
                           if (NOB > 0)
                           {
                               // by default the forth column is ore grade value and the fifth one is its
                               
-                            mat Yh_use = nexy1.col(indore);
-                          // fifth column is its standard deviation
-                          mat Yst_use = nexy1.col(indstd);
-                          double mYh = mean(mean(Yh_use));
-                          double mYst = mean(mean(Yst_use));
-                          double thrsh_ei = getThrsh_ei();
-
-                              Length_drill = sqrt ( accu( pow ( nexy1.submat(0, 0, 0, indz) 
+                              mat Yh_use = (nexy1.col(indore) - MinYh)/difMaxMinYh;
+                              // fifth column is its standard deviation
+                              mat Yst_use = (nexy1.col(indstd)-  MinYs)/ difMaxMinYs;
+                              arma::rowvec smYh = median(Yh_use);
+                              arma::rowvec smYst = median(Yst_use);
+                              double mYh = smYh[0]; 
+                              double mYst = smYst[0];
+                              double thrsh_ei = getThrsh_ei();
+                              
+                              Length_drill = sqrt ( accu( pow ( nexy1.submat(0, 0, 0, indz)
                               - nexy1.submat(nexy1.n_rows-1, 0, nexy1.n_rows-1, indz), 2 ) ) );
-                              Func_EI_L[1] = Length_drill;
-                          
+                              Func_EI_L[0] = Length_drill;
+                              
+                              //PI computiation
+                              Func_EI_L[1]   = normcdf(mYh, thrsh_ei, mYst );
+                              
+                              // EI computation
+                              Func_EI_L[2]   = ( mYh - thrsh_ei ) * normcdf(mYh, thrsh_ei, mYst ) + mYst * normpdf(mYh, thrsh_ei, mYst );
+                              Func_EI_L[3] = mYh;
+                              Func_EI_L[4] = mYst;
+                              
+                              cout << "thrsh_ei: "<< thrsh_ei << "\t";
+                              cout << "mYh: "<< mYh << "\t";
+                              cout << "mYst: "<< mYst << "\t";
+                              cout << "PI: "<< Func_EI_L[1] << "\t";
+                              cout << "EI: "<< Func_EI_L[2] << "\n";
                               
                               
-                              Func_EI_L[0]   = ( thrsh_ei - mYh ) * normcdf(thrsh_ei,mYh, mYst ) + mYst * normpdf(thrsh_ei, mYh, mYst );
-                          
                               //if (Length_drill < minDepth || Length_drill > maxDepth)
-                                //  infeasible = true;
+                              //  infeasible = true;
                               //       nexy1.save("dd.txt", csv_ascii);
                               
                           }
@@ -376,7 +395,7 @@ DHO::DHO( mat &Xin,
                           infeasible = true;
                       if (infeasible)
                       {Func_EI_L[0] = INFINITY;
-                      Func_EI_L[1] = INFINITY;
+                          Func_EI_L[1] = INFINITY;
                       }
                       return Func_EI_L;
                   }
@@ -403,6 +422,7 @@ DHO::DHO( mat &Xin,
               param = OptPars;
               return (param);
           }
+          
           
           
           
