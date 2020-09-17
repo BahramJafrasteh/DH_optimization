@@ -42,18 +42,26 @@ void Loc_optimise::Complete_Search()
   int length = XCandidate.n_rows;     
   cout << length << "\n";
   //Final_EI.resize(length,2);
-  int col1 = XCandidate.n_cols-2;
-  int col2 = XCandidate.n_cols-1;
+  int mYh = XCandidate.n_cols-5;
+  int mYst = XCandidate.n_cols-4;
+  int pi = XCandidate.n_cols-3;
+  int ei = XCandidate.n_cols-2;
+  int len = XCandidate.n_cols-1;
+  
   for (int i =0; i < length; i++)
   {
   setOptParams(XCandidate.row(i));
   mat Fit = computeObjectiveVals();
 //Final_EI[i,0] = Fit[0];
-  XCandidate(i,col1) = Fit[0];
-  XCandidate(i,col2) = Fit[1];
+  XCandidate(i,len) = Fit[0];
+  XCandidate(i,pi) = Fit[1];
+  XCandidate(i,ei) = Fit[2];
+  XCandidate(i,mYh) = Fit[3];
+  XCandidate(i,mYst) = Fit[4];
   
   //Final_EI[i,1] = Fit[1];
-  cout << "Number : " << i <<" EI value : " <<XCandidate(i,col1) << " \n";
+  cout << "Number : " << i<< endl;
+  //cout << "Number : " << i <<" PI value : " <<XCandidate(i,pi) << ", EI value : " <<XCandidate(i,ei) <<" \n";
   }
 //XCandidate.col( XCandidate.n_cols-2) = Final_EI.col(0);
   //XCandidate.col( XCandidate.n_cols-1) = Final_EI.col(1);
