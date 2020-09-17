@@ -59,8 +59,8 @@ void CNN::Search(){
     double dist_Az = 60*M_PI/180;//20*M_PI/180;
     double MinDip = 40*M_PI/180;
     double MaxDip = 90*M_PI/180;
-    double dist_dip = 50*M_PI/180;
-    double thrsh_ei = 26.9;
+    double dist_dip = 5*M_PI/180;
+    double thrsh_ei;
     int numObj = 1;
     int Dimension = 4;
     //string prepMStr = "P1";// P1 P2 P3
