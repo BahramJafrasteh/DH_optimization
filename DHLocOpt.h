@@ -6,6 +6,7 @@
 #include<armadillo>
 #include "DH_OpObj.h"
 using namespace arma;
+using namespace std;
 int main(int argc, char* argv[]);
 class CNN{
  public:
@@ -65,9 +66,9 @@ int* readDataSize(const string fileName);
     {
       return atol(argv[argNumber]);
     }
-    int getDoubleCArg() const
+    double getDoubleCArg() const
     {
-      return atof(argv[argNumber]);
+      return std::atof(argv[argNumber]);
     }
     int incArg()
     {
