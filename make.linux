@@ -23,4 +23,3 @@ CCFLAGS = -ggdb -DDBG -fPIC -I$(INCLUDE) -D$(PLAT) $(MATLABFLAG)
 #CCFLAGS = -O3 -fPIC -I$(INCLUDE) -D$(PLAT) $(MATLABFLAG)
 FC=gfortran
 FCFLAGS = -funroll-all-loops -O3 -fPIC
-
