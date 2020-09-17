@@ -16,10 +16,6 @@ ind_l = 10;
 
 FinalResultsEsfordi = dlmread(file,' ',2,0);
 FinalResultsEsfordi = FinalResultsEsfordi(:,2:end);
-FinalResultsEsfordi(:,[1,2,4,5,7,8,10,11,13,14,16,17,19,20,22,23,25,26,28,29])=[];
-%% just for sarcheshmeh
-%indx= FinalResultsEsfordi(:,1) > 600 & FinalResultsEsfordi(:,1) <2350 & FinalResultsEsfordi(:,2) > 1400 & FinalResultsEsfordi(:,2) <2400;
-%FinalResultsEsfordi = FinalResultsEsfordi(indx,:);
 
 %% In polygon
 [in,on] = inpolygon(FinalResultsEsfordi(:,1),FinalResultsEsfordi(:,2),polygon(:,1),polygon(:,2));
